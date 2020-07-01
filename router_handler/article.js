@@ -1,0 +1,39 @@
+const db = require("../db")
+const path = require('path')
+
+// 文章新增模块
+const addArticle = (req, res) => {
+    res.send('ok')
+    console.log(req.body)
+    console.log('****************************************************************')
+    console.log(req.file)
+
+    if (!req.file || req.fieldname !== 'cover_img') return res.cc('文章封面是必选参数！')
+    const articleInfo = {
+        // 标题、内容、状态、所属的分类Id
+        ...req.body,
+        // 文章封面在服务器端的存放路径
+        cover_img: path.join('/uploads', req.file.filename),
+        // 文章发布时间
+        pub_date: new Date(),
+        // 文章作者的Id
+        author_id: req.user.id,
+    }
+
+    const sql = 'insert into ev_article_cate set ?'
+    db.query(sql, articleInfo, (err, results) => {
+        if (err) return res.cc(err)
+
+        // 执行 SQL 语句成功，但是影响行数不等于 1
+        if (results.affectedRows !== 1) return res.cc('发布文章失败！')
+
+        // 发布文章成功
+        res.cc('发布文章成功', 0)
+    })
+}
+
+
+module.exports = {
+    addArticle
+}
+
